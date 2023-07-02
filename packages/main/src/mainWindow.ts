@@ -1,5 +1,5 @@
-import {app, BrowserWindow} from 'electron';
-import {join, resolve} from 'node:path';
+import { app, BrowserWindow } from 'electron';
+import { join, resolve } from 'node:path';
 
 async function createWindow() {
   const browserWindow = new BrowserWindow({
@@ -25,7 +25,7 @@ async function createWindow() {
     browserWindow?.show();
 
     if (import.meta.env.DEV) {
-      browserWindow?.webContents.openDevTools();
+      browserWindow?.webContents.openDevTools({ mode: 'detach' });
     }
   });
 

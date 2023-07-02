@@ -1,12 +1,11 @@
 {
-  "name": "vite-electron-builder",
-  "description": "Secure boilerplate for Electron app based on Vite",
-  "version": "1.0.2",
+  "name": "music-player",
+  "description": "A music player based on electron and react",
+  "version": "0.0.1",
   "private": true,
   "author": {
-    "email": "kozackunisoft@gmail.com",
-    "name": "Alex Kozack",
-    "url": "https://kozack.me"
+    "name": "liqki",
+    "url": "https://liqki.me"
   },
   "main": "packages/main/dist/index.cjs",
   "scripts": {
@@ -24,16 +23,16 @@
     "lint": "eslint . --ext js,mjs,cjs,ts,mts,cts,vue",
     "typecheck:main": "tsc --noEmit -p packages/main/tsconfig.json",
     "typecheck:preload": "tsc --noEmit -p packages/preload/tsconfig.json",
-    "typecheck:renderer": "vue-tsc --noEmit -p packages/renderer/tsconfig.json",
+    "typecheck:renderer": "tsc --noEmit -p packages/renderer/tsconfig.json",
     "typecheck": "npm run typecheck:main && npm run typecheck:preload && npm run typecheck:renderer",
     "postinstall": "cross-env ELECTRON_RUN_AS_NODE=1 electron scripts/update-electron-vendors.mjs",
     "format": "npx prettier --write \"**/*.{js,mjs,cjs,ts,mts,cts,vue,json}\""
   },
   "devDependencies": {
     "@types/node": "18.16.19",
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.6",
     "@typescript-eslint/eslint-plugin": "5.60.1",
-    "@vitejs/plugin-vue": "4.2.3",
-    "@vue/test-utils": "2.4.0",
     "cross-env": "7.0.3",
     "electron": "25.2.0",
     "electron-builder": "24.4.0",
@@ -46,11 +45,14 @@
     "typescript": "5.1.6",
     "unplugin-auto-expose": "0.0.5",
     "vite": "4.3.9",
+    "vite-plugin-windicss": "^1.9.0",
     "vitest": "0.32.2",
-    "vue": "3.3.4",
-    "vue-tsc": "1.8.3"
+    "windicss": "^3.5.6"
   },
   "dependencies": {
-    "electron-updater": "6.1.1"
+    "@vitejs/plugin-react": "^4.0.1",
+    "electron-updater": "6.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

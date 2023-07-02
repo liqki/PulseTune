@@ -1,10 +1,11 @@
 /* eslint-env node */
 
-import {chrome} from '../../.electron-vendors.cache.json';
-import vue from '@vitejs/plugin-vue';
-import {renderer} from 'unplugin-auto-expose';
-import {join} from 'node:path';
-import {injectAppVersion} from '../../version/inject-app-version-plugin.mjs';
+import { chrome } from '../../.electron-vendors.cache.json';
+import react from '@vitejs/plugin-react';
+import WindiCSS from 'vite-plugin-windicss';
+import { renderer } from 'unplugin-auto-expose';
+import { join } from 'node:path';
+import { injectAppVersion } from '../../version/inject-app-version-plugin.mjs';
 
 const PACKAGE_ROOT = __dirname;
 const PROJECT_ROOT = join(PACKAGE_ROOT, '../..');
@@ -43,7 +44,8 @@ const config = {
     environment: 'happy-dom',
   },
   plugins: [
-    vue(),
+    react(),
+    WindiCSS(),
     renderer.vite({
       preloadEntry: join(PACKAGE_ROOT, '../preload/src/index.ts'),
     }),
