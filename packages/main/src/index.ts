@@ -1,7 +1,8 @@
-import {app} from 'electron';
+import { app, ipcMain } from 'electron';
 import './security-restrictions';
-import {restoreOrCreateWindow} from '/@/mainWindow';
-import {platform} from 'node:process';
+import { restoreOrCreateWindow } from '/@/mainWindow';
+import { platform } from 'node:process';
+import { handleFolderDialog, handleMenuButtons } from './ipcHandlers';
 
 /**
  * Prevent electron from running multiple instances.
@@ -37,7 +38,11 @@ app.on('activate', restoreOrCreateWindow);
  */
 app
   .whenReady()
-  .then(restoreOrCreateWindow)
+  .then(() => {
+    ipcMain.on('handle-menu-buttons', handleMenuButtons);
+    ipcMain.handle('dialog:addFolder', handleFolderDialog);
+    restoreOrCreateWindow();
+  })
   .catch(e => console.error('Failed create window:', e));
 
 /**

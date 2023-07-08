@@ -3,8 +3,7 @@
     "browser": true,
     "node": false
   },
-  "extends": [
-  ],
+  "extends": [],
   "parserOptions": {
     "parser": "@typescript-eslint/parser",
     "ecmaVersion": 12,
