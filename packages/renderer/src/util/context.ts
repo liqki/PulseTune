@@ -16,6 +16,11 @@ export type Folders = {
   setFolders: (folders: Array<Folder>) => void;
 };
 
+export type Favorites = {
+  favorites: Array<string>;
+  setFavorites: (favorites: Array<string>) => void;
+};
+
 export const NowPlayingContext = createContext<NowPlaying>({
   path: '',
   setPath: () => {},
@@ -29,3 +34,10 @@ export const FoldersContext = createContext<Folders>({
 });
 
 export const useFolders = () => useContext(FoldersContext);
+
+export const FavoritesContext = createContext<Favorites>({
+  favorites: [],
+  setFavorites: () => {},
+});
+
+export const useFavorites = () => useContext(FavoritesContext);

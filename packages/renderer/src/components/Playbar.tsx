@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BsFillPlayCircleFill,
   BsFillPauseCircleFill,
@@ -8,42 +8,60 @@ import {
   BsHeart,
 } from "react-icons/bs";
 import { shortenString } from "../util/helpers";
-import { useFolders, useNowPlaying } from "../util/context";
+import { useFavorites, useFolders, useNowPlaying } from "../util/context";
 
 function Playbar() {
   type Song = {
     artist: string;
     title: string;
-    isFavorite?: boolean;
   };
 
   const { path, setPath } = useNowPlaying();
   const { folders } = useFolders();
+  const { favorites, setFavorites } = useFavorites();
   const [song, setSong] = useState<Song>({
     artist: "",
     title: "",
   });
   const [playing, setPlaying] = useState<boolean>(false);
   const [player, setPlayer] = useState<HTMLAudioElement | null>(null);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+
+  const firstUpdate = useRef(true);
 
   useEffect(() => {
     setPlayer(new Audio());
   }, []);
 
   useEffect(() => {
-    if (path === "" || !player) return;
+    if (path === undefined || path === "" || !player) return;
+    setPlaying(false);
     const fileName = path.replace(/^.*[\\\/]/, "");
+    if (fileName === "" || fileName === undefined) return;
     const artist = fileName.split(" - ")[0];
-    const title = fileName.split(" - ")[1].split(".")[0];
+    const title = fileName.split(" - ")[1]?.split(".")[0];
     setSong({ artist, title });
+    if (favorites.includes(path)) {
+      setIsFavorite(true);
+    } else {
+      setIsFavorite(false);
+    }
     player.src = path;
-    setPlaying(true);
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+    setTimeout(() => {
+      setPlaying(true);
+    }, 10);
   }, [path]);
 
   useEffect(() => {
     if (!player) return;
     player.volume = 0.1;
-    if (path !== "") setPlaying(true);
+    player.onended = () => {
+      skip(1);
+    };
   }, [player]);
 
   useEffect(() => {
@@ -51,28 +69,76 @@ function Playbar() {
     playing ? player.play() : player.pause();
   }, [playing]);
 
+  useEffect(() => {
+    if (path.startsWith("File:///")) {
+      if (favorites.includes(path)) {
+        setIsFavorite(true);
+      } else {
+        setIsFavorite(false);
+      }
+    } else {
+      if (favorites.includes("File:///" + path.replace(/\\/g, "/"))) {
+        setIsFavorite(true);
+      } else {
+        setIsFavorite(false);
+      }
+    }
+  }, [favorites]);
+
   const skip = (direction: number) => {
-    if (!player) return;
-    const folder =
-      folders[
-        folders.findIndex(folder => folder.path === path.substring(0, path.lastIndexOf("\\")))
-      ];
-    if (!folder.files) return;
-    const currentIndex = folder.files.findIndex(
-      file => file === path.substring(path.lastIndexOf("\\") + 1),
-    );
-    let nextIndex = currentIndex + direction;
-    if (nextIndex < 0) nextIndex = folder.files.length - 1;
-    if (nextIndex > folder.files.length - 1) nextIndex = 0;
-    setPlaying(false);
-    setPath(folder.path + "\\" + folder.files[nextIndex]);
+    if (!player || path === "") return;
+    // is favorite
+    if (path.startsWith("File:///")) {
+      if (favorites.length === 1) return;
+      const currentIndex = favorites.findIndex(favorite => favorite === path);
+      let nextIndex = currentIndex + direction;
+      if (nextIndex < 0) nextIndex = favorites.length - 1;
+      if (nextIndex > favorites.length - 1) nextIndex = 0;
+      setPlaying(false);
+      setPath(favorites[nextIndex]);
+    } else {
+      const folder =
+        folders[
+          folders.findIndex(folder => folder.path === path.substring(0, path.lastIndexOf("\\")))
+        ];
+      if (!folder) return;
+      if (!("files" in folder) || folder.files === undefined) return;
+      if (folder.files.length === 1) return;
+      const currentIndex = folder.files.findIndex(
+        file => file === path.substring(path.lastIndexOf("\\") + 1),
+      );
+      let nextIndex = currentIndex + direction;
+      if (nextIndex < 0) nextIndex = folder.files.length - 1;
+      if (nextIndex > folder.files.length - 1) nextIndex = 0;
+      setPlaying(false);
+      setPath(folder.path + "\\" + folder.files[nextIndex]);
+    }
+  };
+
+  const addFavorite = () => {
+    if (path.startsWith("File:///")) {
+      setFavorites([...favorites, path]);
+      return;
+    }
+    setFavorites([...favorites, "File:///" + path.replace(/\\/g, "/")]);
+  };
+
+  const removeFavorite = () => {
+    if (path.startsWith("File:///")) {
+      setPath(path.substring(8).replaceAll("/", "\\"));
+      setFavorites(favorites.filter(favorite => favorite !== path));
+      return;
+    }
+    setFavorites(favorites.filter(favorite => favorite !== "File:///" + path.replace(/\\/g, "/")));
   };
 
   return (
     <div className="w-screen h-20 bg-[#fcfcfc] dark:bg-[#1b1c26] fixed bottom-0 left-0">
       <div className="flex justify-between items-center h-full px-4">
         <div className="flex items-center w-50">
-          {song.title !== "" && <div className="w-12 h-12 bg-black rounded-full"></div>}
+          {(song.title === undefined || song.title !== "") && (
+            <div className="w-12 h-12 bg-black rounded-full"></div>
+          )}
           <div className="ml-4">
             <h1 className="text-lg font-semibold">{shortenString(song.title, 15)}</h1>
             <h2 className="text-sm">{shortenString(song.artist, 20)}</h2>
@@ -109,13 +175,17 @@ function Playbar() {
           />
         </div>
         <div className="flex items-center justify-end w-50">
-          {song.isFavorite ? (
-            <BsFillHeartFill className="w-7 h-7 dark:text-gray-200 dark:hover:text-white" />
+          {isFavorite ? (
+            <BsFillHeartFill
+              className="w-7 h-7 dark:text-gray-200 dark:hover:text-white"
+              onClick={() => removeFavorite()}
+            />
           ) : (
             <BsHeart
               className={`w-7 h-7 dark:text-gray-200 dark:hover:text-white ${
                 song.title === "" && "hidden"
               }`}
+              onClick={() => addFavorite()}
             />
           )}
         </div>

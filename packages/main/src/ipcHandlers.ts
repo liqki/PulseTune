@@ -1,4 +1,4 @@
-import type { IpcMainEvent} from 'electron';
+import type { IpcMainEvent } from 'electron';
 import { BrowserWindow, dialog } from 'electron';
 
 export const handleMenuButtons = (event: IpcMainEvent, button: string) => {

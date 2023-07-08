@@ -5,7 +5,8 @@
   "private": true,
   "author": {
     "name": "liqki",
-    "url": "https://liqki.me"
+    "url": "https://liqki.me",
+    "email": "leda.bonfert@gmail.com"
   },
   "main": "packages/main/dist/index.cjs",
   "scripts": {
