@@ -9,6 +9,7 @@ import {
 } from "react-icons/bs";
 import { shortenString } from "../util/helpers";
 import { useFavorites, useFolders, useNowPlaying } from "../util/context";
+import Timeline from "./Timeline";
 
 function Playbar() {
   type Song = {
@@ -26,50 +27,12 @@ function Playbar() {
   const [playing, setPlaying] = useState<boolean>(false);
   const [player, setPlayer] = useState<HTMLAudioElement | null>(null);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [newTime, setNewTime] = useState<number>(0);
 
   const firstUpdate = useRef(true);
 
-  useEffect(() => {
-    setPlayer(new Audio());
-  }, []);
-
-  useEffect(() => {
-    if (path === undefined || path === "" || !player) return;
-    setPlaying(false);
-    const fileName = path.replace(/^.*[\\\/]/, "");
-    if (fileName === "" || fileName === undefined) return;
-    const artist = fileName.split(" - ")[0];
-    const title = fileName.split(" - ")[1]?.split(".")[0];
-    setSong({ artist, title });
-    if (favorites.includes(path)) {
-      setIsFavorite(true);
-    } else {
-      setIsFavorite(false);
-    }
-    player.src = path;
-    if (firstUpdate.current) {
-      firstUpdate.current = false;
-      return;
-    }
-    setTimeout(() => {
-      setPlaying(true);
-    }, 10);
-  }, [path]);
-
-  useEffect(() => {
-    if (!player) return;
-    player.volume = 0.1;
-    player.onended = () => {
-      skip(1);
-    };
-  }, [player]);
-
-  useEffect(() => {
-    if (!player) return;
-    playing ? player.play() : player.pause();
-  }, [playing]);
-
-  useEffect(() => {
+  const checkFavorite = () => {
     if (path.startsWith("File:///")) {
       if (favorites.includes(path)) {
         setIsFavorite(true);
@@ -83,6 +46,63 @@ function Playbar() {
         setIsFavorite(false);
       }
     }
+  };
+
+  useEffect(() => {
+    setPlayer(new Audio());
+  }, []);
+
+  useEffect(() => {
+    if (path === undefined || path === "" || !player) return;
+    setPlaying(false);
+    const fileName = path.replace(/^.*[\\\/]/, "");
+    if (fileName === "" || fileName === undefined) return;
+    const artist = fileName.split(" - ")[0];
+    const title = fileName.split(" - ")[1]?.split(".")[0];
+    setSong({ artist, title });
+    checkFavorite();
+    player.src = path;
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+    setTimeout(() => {
+      setPlaying(true);
+    }, 10);
+  }, [path]);
+
+  useEffect(() => {
+    if (!player) return;
+    player.volume = 0.1;
+  }, [player]);
+
+  useEffect(() => {
+    if (!player) return;
+    playing ? player.play() : player.pause();
+    if (playing) {
+      player.ontimeupdate = () => {
+        setCurrentTime(player.currentTime);
+      };
+    } else {
+      player.ontimeupdate = null;
+    }
+  }, [playing]);
+
+  useEffect(() => {
+    if (!player) return;
+    player.currentTime = newTime;
+  }, [newTime]);
+
+  useEffect(() => {
+    if (!player) return;
+    if (currentTime >= player.duration) {
+      skip(1);
+      setCurrentTime(0);
+    }
+  }, [currentTime]);
+
+  useEffect(() => {
+    checkFavorite();
   }, [favorites]);
 
   const skip = (direction: number) => {
@@ -126,8 +146,7 @@ function Playbar() {
   const removeFavorite = () => {
     if (path.startsWith("File:///")) {
       setPath(path.substring(8).replaceAll("/", "\\"));
-      setFavorites(favorites.filter(favorite => favorite !== path));
-      return;
+      return setFavorites(favorites.filter(favorite => favorite !== path));
     }
     setFavorites(favorites.filter(favorite => favorite !== "File:///" + path.replace(/\\/g, "/")));
   };
@@ -144,34 +163,41 @@ function Playbar() {
             <h2 className="text-sm">{shortenString(song.artist, 20)}</h2>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <BsFillSkipStartCircleFill
-            className="w-9 h-9 dark:text-gray-200 dark:hover:text-white transform transition-transform hover:scale-105"
-            onClick={() => {
-              if (!player) return;
-              player.currentTime > 5 ? (player.currentTime = 0) : skip(-1);
-            }}
-          />
-          {!playing ? (
-            <BsFillPlayCircleFill
-              className="w-10 h-10 transform hover:scale-105 transition-transform"
+        <div className="flex flex-col items-center justify-center">
+          <div className="flex items-center gap-4">
+            <BsFillSkipStartCircleFill
+              className="w-9 h-9 dark:text-gray-200 dark:hover:text-white transform transition-transform hover:scale-105"
               onClick={() => {
-                song.title !== "" && setPlaying(true);
+                if (!player) return;
+                player.currentTime > 5 ? (player.currentTime = 0) : skip(-1);
               }}
             />
-          ) : (
-            <BsFillPauseCircleFill
-              className="w-10 h-10 transform hover:scale-105 transition-transform"
+            {!playing ? (
+              <BsFillPlayCircleFill
+                className="w-10 h-10 transform hover:scale-105 transition-transform"
+                onClick={() => {
+                  song.title !== "" && setPlaying(true);
+                }}
+              />
+            ) : (
+              <BsFillPauseCircleFill
+                className="w-10 h-10 transform hover:scale-105 transition-transform"
+                onClick={() => {
+                  setPlaying(false);
+                }}
+              />
+            )}
+            <BsFillSkipEndCircleFill
+              className="w-9 h-9 dark:text-gray-200 dark:hover:text-white transform transition-transform hover:scale-105"
               onClick={() => {
-                setPlaying(false);
+                skip(1);
               }}
             />
-          )}
-          <BsFillSkipEndCircleFill
-            className="w-9 h-9 dark:text-gray-200 dark:hover:text-white transform transition-transform hover:scale-105"
-            onClick={() => {
-              skip(1);
-            }}
+          </div>
+          <Timeline
+            player={player}
+            currentTime={currentTime}
+            setNewTime={setNewTime}
           />
         </div>
         <div className="flex items-center justify-end w-50">

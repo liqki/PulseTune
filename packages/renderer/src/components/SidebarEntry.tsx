@@ -4,13 +4,13 @@ import { shortenString } from "../util/helpers";
 
 function SidebarEntry({
   folder,
-  openFolder,
-  setOpenFolder,
+  openFolders,
+  setOpenFolders,
   setPath,
 }: {
   folder: Folder;
-  openFolder: string;
-  setOpenFolder: Function;
+  openFolders: Array<string>;
+  setOpenFolders: Function;
   setPath: Function;
 }) {
   const { path } = useNowPlaying();
@@ -28,20 +28,20 @@ function SidebarEntry({
         {shortenString(folder.name, 20)}
         <RiArrowDropDownLine
           className={`h-7 w-7 ${
-            openFolder === folder.path && "transform rotate-180"
+            openFolders.includes(folder.path) && "transform rotate-180"
           } dark:text-gray-200 dark:hover:text-white transition-transform ml-auto`}
           onClick={() => {
-            if (openFolder === folder.path) {
-              setOpenFolder("");
+            if (openFolders.includes(folder.path)) {
+              setOpenFolders(openFolders.filter((path: string) => path !== folder.path));
             } else {
-              setOpenFolder(folder.path);
+              setOpenFolders([...openFolders, folder.path]);
             }
           }}
         />
       </div>
       <div
         className={`flex flex-col items-center ml-4 ${
-          openFolder === folder.path ? "block" : "hidden"
+          openFolders.includes(folder.path) ? "block" : "hidden"
         }`}
       >
         <ul>

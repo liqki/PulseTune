@@ -8,7 +8,7 @@ function Sidebar() {
   const { setPath } = useNowPlaying();
   const { folders, setFolders } = useFolders();
   const { favorites } = useFavorites();
-  const [openFolder, setOpenFolder] = useState<string>("");
+  const [openFolders, setOpenFolders] = useState<Array<string>>([]);
 
   const addFolder = async () => {
     const folder = await handleFolderDialog();
@@ -31,19 +31,19 @@ function Sidebar() {
       >
         <AiFillFolderAdd className="h-10 w-10 dark:text-gray-200 dark:hover:text-white transform transition-transform hover:scale-105" />
       </button>
-      <ul className="ml-2 mt-2">
+      <ul className="ml-2 mt-2 mr-2">
         <SidebarEntry
           folder={{ path: "favorites", name: "Favorites", files: favorites }}
-          openFolder={openFolder}
-          setOpenFolder={setOpenFolder}
+          openFolders={openFolders}
+          setOpenFolders={setOpenFolders}
           setPath={setPath}
         />
         {folders.map((folder, i) => (
           <SidebarEntry
             key={i}
             folder={folder}
-            openFolder={openFolder}
-            setOpenFolder={setOpenFolder}
+            openFolders={openFolders}
+            setOpenFolders={setOpenFolders}
             setPath={setPath}
           />
         ))}
