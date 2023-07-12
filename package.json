@@ -55,6 +55,7 @@
     "windicss": "^3.5.6"
   },
   "dependencies": {
+    "album-art": "^3.1.0",
     "electron-updater": "6.1.1"
   }
 }

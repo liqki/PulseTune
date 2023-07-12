@@ -7,9 +7,14 @@ import {
   BsFillHeartFill,
   BsHeart,
 } from "react-icons/bs";
+import { MdVolumeOff, MdVolumeUp } from "react-icons/md";
+import { BiSolidVolumeMute, BiSolidVolumeFull } from "react-icons/bi";
 import { shortenString } from "../util/helpers";
 import { useFavorites, useFolders, useNowPlaying } from "../util/context";
 import Timeline from "./Timeline";
+// @ts-ignore
+import * as albumArt from "album-art";
+import VolumeSlider from "./VolumeSlider";
 
 function Playbar() {
   type Song = {
@@ -29,6 +34,9 @@ function Playbar() {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [newTime, setNewTime] = useState<number>(0);
+  const [albumArtUrl, setAlbumArtUrl] = useState<string>("");
+  const [volume, setVolume] = useState<number>(0.1);
+  const [displayVolume, setDisplayVolume] = useState<boolean>(false);
 
   const firstUpdate = useRef(true);
 
@@ -48,8 +56,19 @@ function Playbar() {
     }
   };
 
+  const getAlbumArt = async () => {
+    albumArt(song.artist, { album: song.title, size: "large" }, (err: any, url: string) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      setAlbumArtUrl(url);
+    });
+  };
+
   useEffect(() => {
     setPlayer(new Audio());
+    setVolume(localStorage.getItem("volume") ? parseFloat(localStorage.getItem("volume")!) : 0.1);
   }, []);
 
   useEffect(() => {
@@ -72,9 +91,20 @@ function Playbar() {
   }, [path]);
 
   useEffect(() => {
+    if (song.artist === "" || song.title === "") return;
+    getAlbumArt();
+  }, [song]);
+
+  useEffect(() => {
     if (!player) return;
-    player.volume = 0.1;
+    player.volume = volume;
   }, [player]);
+
+  useEffect(() => {
+    if (!player) return;
+    player.volume = volume;
+    if (volume > 0) localStorage.setItem("volume", volume.toString());
+  }, [volume]);
 
   useEffect(() => {
     if (!player) return;
@@ -156,7 +186,10 @@ function Playbar() {
       <div className="flex justify-between items-center h-full px-4">
         <div className="flex items-center w-50">
           {(song.title === undefined || song.title !== "") && (
-            <div className="w-12 h-12 bg-black rounded-full"></div>
+            <img
+              src={albumArtUrl}
+              className="w-12 h-12 bg-black rounded-full"
+            />
           )}
           <div className="ml-4">
             <h1 className="text-lg font-semibold">{shortenString(song.title, 15)}</h1>
@@ -200,7 +233,7 @@ function Playbar() {
             setNewTime={setNewTime}
           />
         </div>
-        <div className="flex items-center justify-end w-50">
+        <div className="flex items-center justify-end gap-4 w-50">
           {isFavorite ? (
             <BsFillHeartFill
               className="w-7 h-7 dark:text-gray-200 dark:hover:text-white"
@@ -214,6 +247,32 @@ function Playbar() {
               onClick={() => addFavorite()}
             />
           )}
+          {volume > 0 ? (
+            <MdVolumeUp
+              className="w-7 h-7 dark:text-gray-200 dark:hover:text-white"
+              onClick={() => {
+                if (displayVolume) return setVolume(0);
+                setDisplayVolume(true);
+              }}
+            />
+          ) : (
+            <MdVolumeOff
+              className="w-7 h-7 dark:text-gray-200 dark:hover:text-white"
+              onClick={() => {
+                if (displayVolume) return setVolume(0.5);
+                setDisplayVolume(true);
+              }}
+            />
+          )}
+          <div
+            className={`${displayVolume ? "block" : "hidden"} absolute bottom-22 -right-2`}
+            onMouseLeave={() => setDisplayVolume(false)}
+          >
+            <VolumeSlider
+              volume={volume}
+              setVolume={setVolume}
+            />
+          </div>
         </div>
       </div>
     </div>
