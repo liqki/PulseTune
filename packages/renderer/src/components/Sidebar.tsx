@@ -24,14 +24,14 @@ function Sidebar() {
   };
 
   return (
-    <div className="h-full w-45 fixed left-0 bg-[#fcfcfc] dark:bg-[#1b1c26] overflow-y-scroll scrollbar-hide flex flex-col justify-start items-start">
+    <div className="h-[calc(100%-120px)] w-45 fixed left-0 bg-[#fcfcfc] dark:bg-[#1b1c26] flex flex-col justify-start items-start">
       <button
         onClick={() => addFolder()}
         className="w-full flex justify-center items-center"
       >
         <AiFillFolderAdd className="h-10 w-10 dark:text-gray-200 dark:hover:text-white transform transition-transform hover:scale-105" />
       </button>
-      <ul className="ml-2 mt-2 mr-2">
+      <ul className="ml-2 mt-2 mr-2 h-full overflow-y-scroll scrollbar-hide">
         <SidebarEntry
           folder={{ path: "favorites", name: "Favorites", files: favorites }}
           openFolders={openFolders}

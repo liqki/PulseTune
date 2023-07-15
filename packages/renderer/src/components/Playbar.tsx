@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import {
   BsFillPlayCircleFill,
   BsFillPauseCircleFill,
@@ -8,13 +8,13 @@ import {
   BsHeart,
 } from "react-icons/bs";
 import { MdVolumeOff, MdVolumeUp } from "react-icons/md";
-import { BiSolidVolumeMute, BiSolidVolumeFull } from "react-icons/bi";
 import { shortenString } from "../util/helpers";
 import { useFavorites, useFolders, useNowPlaying } from "../util/context";
 import Timeline from "./Timeline";
 // @ts-ignore
 import * as albumArt from "album-art";
 import VolumeSlider from "./VolumeSlider";
+import { getAlbumArt } from "#preload";
 
 function Playbar() {
   type Song = {
@@ -56,16 +56,6 @@ function Playbar() {
     }
   };
 
-  const getAlbumArt = async () => {
-    albumArt(song.artist, { album: song.title, size: "large" }, (err: any, url: string) => {
-      if (err) {
-        console.log(err);
-        return;
-      }
-      setAlbumArtUrl(url);
-    });
-  };
-
   useEffect(() => {
     setPlayer(new Audio());
     setVolume(localStorage.getItem("volume") ? parseFloat(localStorage.getItem("volume")!) : 0.1);
@@ -92,7 +82,7 @@ function Playbar() {
 
   useEffect(() => {
     if (song.artist === "" || song.title === "") return;
-    getAlbumArt();
+    getAlbumArt(song).then((url: string) => setAlbumArtUrl(url));
   }, [song]);
 
   useEffect(() => {
@@ -189,6 +179,9 @@ function Playbar() {
             <img
               src={albumArtUrl}
               className="w-12 h-12 bg-black rounded-full"
+              onDragStart={e => {
+                e.preventDefault();
+              }}
             />
           )}
           <div className="ml-4">
@@ -259,7 +252,7 @@ function Playbar() {
             <MdVolumeOff
               className="w-7 h-7 dark:text-gray-200 dark:hover:text-white"
               onClick={() => {
-                if (displayVolume) return setVolume(0.5);
+                if (displayVolume) return setVolume(parseFloat(localStorage.getItem("volume")!));
                 setDisplayVolume(true);
               }}
             />
