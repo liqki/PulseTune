@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Titlebar from "./components/Titlebar";
 import Page from "./components/Page";
 import { FavoritesContext, Folder, FoldersContext, NowPlayingContext } from "./util/context";
-import { fileExists, readFiles } from "#preload";
+import { fileExists, readFiles, readFolders } from "#preload";
 
 function App() {
   const WebkitAppRegion = {
@@ -15,26 +15,27 @@ function App() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  const updateFolders = (folders: Folder[]) => {
+  const updateFolders = async (folders: Folder[]) => {
     let newFolders: Folder[] = [];
-    folders.forEach(async folder => {
+    for await (const folder of folders) {
       const exists = await fileExists(folder.path);
       if (!exists) return;
-      const obj: Folder = { path: folder.path, name: folder.name, files: [] };
-      readFiles(folder.path).then(files => (obj.files = files));
+      const obj: Folder = { path: folder.path, name: folder.name, files: [], subfolders: [] };
+      await readFiles(folder.path).then(files => (obj.files = files));
+      await readFolders(folder.path).then(subfolders => (obj.subfolders = subfolders));
       newFolders.push(obj);
-    });
-    setTimeout(() => setFolders(newFolders), 10);
+    }
+    setFolders(newFolders);
   };
 
-  const updateFavorites = (favorites: string[]) => {
+  const updateFavorites = async (favorites: string[]) => {
     let newFavorites: string[] = [];
-    favorites.forEach(async favorite => {
+    for await (const favorite of favorites) {
       const exists = await fileExists(favorite.substring(8));
       if (!exists) return;
       newFavorites.push(favorite);
-    });
-    setTimeout(() => setFavorites(newFavorites), 10);
+    }
+    setFavorites(newFavorites);
   };
 
   useEffect(() => {

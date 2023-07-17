@@ -9,6 +9,7 @@ export type Folder = {
   path: string;
   name: string;
   files?: Array<string>;
+  subfolders?: Array<Folder>;
 };
 
 export type Folders = {

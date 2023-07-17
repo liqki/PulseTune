@@ -2,7 +2,7 @@ import { app, ipcMain } from 'electron';
 import './security-restrictions';
 import { restoreOrCreateWindow } from '/@/mainWindow';
 import { platform } from 'node:process';
-import { handleFolderDialog, handleMenuButtons } from './ipcHandlers';
+import { handleFolderDialog, handleMenuButtons, openExternalLink } from './ipcHandlers';
 
 /**
  * Prevent electron from running multiple instances.
@@ -40,6 +40,7 @@ app
   .whenReady()
   .then(() => {
     ipcMain.on('handle-menu-buttons', handleMenuButtons);
+    ipcMain.on('open-external-link', openExternalLink);
     ipcMain.handle('dialog:addFolder', handleFolderDialog);
     restoreOrCreateWindow();
   })

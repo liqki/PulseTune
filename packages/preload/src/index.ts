@@ -7,6 +7,13 @@ import { existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 const albumArt = require('album-art');
 
+type Folder = {
+  path: string;
+  name: string;
+  files?: Array<string>;
+  subfolders?: Array<Folder>;
+};
+
 export const handleMenuButtons = (button: string) => {
   ipcRenderer.send('handle-menu-buttons', button);
 };
@@ -26,6 +33,22 @@ export const readFiles = async (folder: string) => {
   return filtered;
 };
 
+export const readFolders = async (folder: string) => {
+  const folders = await readdir(folder, { withFileTypes: true });
+  const filtered = folders.filter(folder => folder.isDirectory());
+  if (filtered.length === 0) return [];
+  const subfolders: Array<Folder> = [];
+  for await (const subfolder of filtered) {
+    subfolders.push({
+      path: folder + '\\' + subfolder.name,
+      name: subfolder.name,
+      files: await readFiles(folder + '\\' + subfolder.name),
+      subfolders: await readFolders(folder + '\\' + subfolder.name),
+    });
+  }
+  return subfolders;
+};
+
 export const fileExists = async (path: string): Promise<boolean> => {
   return existsSync(path);
 };
@@ -41,4 +64,8 @@ export const getAlbumArt = async (song: { artist: string; title: string }): Prom
     returnURL = url;
   });
   return returnURL;
+};
+
+export const openExternalLink = (link: string) => {
+  ipcRenderer.send('open-external-link', link);
 };

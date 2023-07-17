@@ -1,5 +1,5 @@
 import type { IpcMainEvent } from 'electron';
-import { BrowserWindow, dialog } from 'electron';
+import { BrowserWindow, dialog, shell } from 'electron';
 
 export const handleMenuButtons = (event: IpcMainEvent, button: string) => {
   const webContents = event.sender;
@@ -23,4 +23,8 @@ export const handleFolderDialog = async () => {
     properties: ['openDirectory'],
   });
   if (!canceled) return filePaths[0];
+};
+
+export const openExternalLink = (event: IpcMainEvent, link: string) => {
+  shell.openExternal(link);
 };
