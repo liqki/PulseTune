@@ -18,6 +18,9 @@ interface ImportMetaEnv {
 
   /** Current app version */
   readonly VITE_APP_VERSION: string;
+
+  /** Discord client id for rich presence */
+  readonly VITE_DISCORD_CLIENT_ID: string;
 }
 
 interface ImportMeta {

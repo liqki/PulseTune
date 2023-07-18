@@ -2,7 +2,13 @@ import { app, ipcMain } from 'electron';
 import './security-restrictions';
 import { restoreOrCreateWindow } from '/@/mainWindow';
 import { platform } from 'node:process';
-import { handleFolderDialog, handleMenuButtons, openExternalLink } from './ipcHandlers';
+import {
+  handleFolderDialog,
+  handleMenuButtons,
+  isMaximized,
+  openExternalLink,
+  updateRichPresence,
+} from './ipcHandlers';
 
 /**
  * Prevent electron from running multiple instances.
@@ -41,6 +47,8 @@ app
   .then(() => {
     ipcMain.on('handle-menu-buttons', handleMenuButtons);
     ipcMain.on('open-external-link', openExternalLink);
+    ipcMain.on('update-rich-presence', updateRichPresence);
+    ipcMain.on('is-maximized', isMaximized);
     ipcMain.handle('dialog:addFolder', handleFolderDialog);
     restoreOrCreateWindow();
   })

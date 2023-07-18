@@ -1,9 +1,14 @@
-import { handleMenuButtons, openExternalLink } from "#preload";
-import { useContext, useState } from "react";
-import { MdMinimize } from "react-icons/md";
-import { VscChromeRestore, VscPrimitiveSquare, VscClose } from "react-icons/vsc";
+import { handleMenuButtons, isMaximized, openExternalLink } from "#preload";
+import { useContext, useEffect, useState } from "react";
+import { VscChromeRestore, VscChromeMaximize, VscChromeMinimize, VscClose } from "react-icons/vsc";
 import { NowPlayingContext } from "../util/context";
 import logo from "../assets/icon.png";
+
+declare global {
+  interface Window {
+    ipcRenderer?: any;
+  }
+}
 
 function Titlebar() {
   const WebkitAppRegion = {
@@ -11,13 +16,21 @@ function Titlebar() {
   } as React.CSSProperties;
 
   const { path } = useContext(NowPlayingContext);
-  const [maximized, setMaximized] = useState<boolean>(false);
+  const [maximized, setMaximized] = useState<boolean>(isMaximized());
 
   const button = "w-11 h-7 flex justify-center items-center";
   const icon = "w-7 h-5";
 
+  useEffect(() => {
+    window.ipcRenderer.on("window:maximize", () => {
+      setMaximized(true);
+    });
+    window.ipcRenderer.on("window:unmaximize", () => {
+      setMaximized(false);
+    });
+  }, []);
+
   const handleClick = (button: string) => {
-    if (button === "maximize") setMaximized(!maximized);
     handleMenuButtons(button);
   };
 
@@ -31,7 +44,7 @@ function Titlebar() {
           style={WebkitAppRegion}
         />
       </div>
-      <div className="">{path.replace(/^.*[\\\/]/, "")}</div>
+      <div>{path.replace(/^.*[\\\/]/, "")}</div>
       <ul
         className="flex justify-end items-center w-33"
         style={WebkitAppRegion}
@@ -41,7 +54,7 @@ function Titlebar() {
             className={`${button} hover:bg-[rgba(255,255,255,0.1)]`}
             onClick={() => handleClick("minimize")}
           >
-            <MdMinimize className={`${icon}`} />
+            <VscChromeMinimize className={`${icon} relative top-1`} />
           </div>
         </li>
         <li>
@@ -52,7 +65,7 @@ function Titlebar() {
             {maximized ? (
               <VscChromeRestore className={`${icon}`} />
             ) : (
-              <VscPrimitiveSquare className={`${icon}`} />
+              <VscChromeMaximize className={`${icon}`} />
             )}
           </div>
         </li>

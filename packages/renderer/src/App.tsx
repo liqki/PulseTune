@@ -45,7 +45,9 @@ function App() {
     if (folders) updateFolders(JSON.parse(folders));
     const lastPlayed = localStorage.getItem("lastPlayed");
     if (lastPlayed)
-      fileExists(lastPlayed.substring(8)).then(exists => exists && setPath(lastPlayed));
+      lastPlayed.startsWith("File://")
+        ? fileExists(lastPlayed.substring(8)).then(exists => exists && setPath(lastPlayed))
+        : fileExists(lastPlayed).then(exists => exists && setPath(lastPlayed));
     const favorites = localStorage.getItem("favorites");
     if (favorites) updateFavorites(JSON.parse(favorites));
   }, []);

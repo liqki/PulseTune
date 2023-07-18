@@ -2,10 +2,17 @@
  * @module preload
  */
 
-import { ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 const albumArt = require('album-art');
+
+type DiscordRPC = {
+  details: string;
+  startTimestamp: number;
+  endTimestamp: number;
+  largeImageKey: string;
+};
 
 type Folder = {
   path: string;
@@ -58,7 +65,6 @@ export const getAlbumArt = async (song: { artist: string; title: string }): Prom
   const artist = song.artist.split(',')[0];
   await albumArt(artist, { album: song.title, size: 'large' }, (err: any, url: string) => {
     if (err) {
-      console.log(err);
       return '';
     }
     returnURL = url;
@@ -69,3 +75,20 @@ export const getAlbumArt = async (song: { artist: string; title: string }): Prom
 export const openExternalLink = (link: string) => {
   ipcRenderer.send('open-external-link', link);
 };
+
+export const updateRichPresence = (newRPC: DiscordRPC) => {
+  ipcRenderer.send('update-rich-presence', newRPC);
+};
+
+export const isMaximized = () => {
+  return ipcRenderer.sendSync('is-maximized');
+};
+
+contextBridge.exposeInMainWorld('ipcRenderer', {
+  on: (channel: string, func: any) => {
+    const validChannels = ['window:maximize', 'window:unmaximize'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.on(channel, (event, ...args) => func(...args));
+    }
+  },
+});

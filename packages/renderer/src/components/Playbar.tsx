@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BsFillPlayCircleFill,
   BsFillPauseCircleFill,
@@ -11,10 +11,8 @@ import { MdVolumeOff, MdVolumeUp } from "react-icons/md";
 import { shortenString } from "../util/helpers";
 import { useFavorites, useFolders, useNowPlaying } from "../util/context";
 import Timeline from "./Timeline";
-// @ts-ignore
-import * as albumArt from "album-art";
 import VolumeSlider from "./VolumeSlider";
-import { getAlbumArt } from "#preload";
+import { getAlbumArt, updateRichPresence } from "#preload";
 
 function Playbar() {
   type Song = {
@@ -38,7 +36,8 @@ function Playbar() {
   const [volume, setVolume] = useState<number>(0.1);
   const [displayVolume, setDisplayVolume] = useState<boolean>(false);
 
-  const firstUpdate = useRef(true);
+  const pathLoad = useRef(true);
+  const rpcLoad = useRef(true);
 
   const checkFavorite = () => {
     if (path.startsWith("File:///")) {
@@ -71,8 +70,8 @@ function Playbar() {
     setSong({ artist, title });
     checkFavorite();
     player.src = path;
-    if (firstUpdate.current) {
-      firstUpdate.current = false;
+    if (pathLoad.current) {
+      pathLoad.current = false;
       return;
     }
     setTimeout(() => {
@@ -81,8 +80,20 @@ function Playbar() {
   }, [path]);
 
   useEffect(() => {
-    if (song.artist === "" || song.title === "") return;
-    getAlbumArt(song).then((url: string) => setAlbumArtUrl(url));
+    if (song.artist === "" || song.title === "" || !player) return;
+    getAlbumArt(song).then((url: string) => {
+      setAlbumArtUrl(url);
+      if (rpcLoad.current) {
+        rpcLoad.current = false;
+        return;
+      }
+      updateRichPresence({
+        details: song.title + " - " + song.artist,
+        startTimestamp: Date.now(),
+        endTimestamp: Date.now() + player.duration * 1000,
+        largeImageKey: url,
+      });
+    });
   }, [song]);
 
   useEffect(() => {
@@ -100,17 +111,36 @@ function Playbar() {
     if (!player) return;
     playing ? player.play() : player.pause();
     if (playing) {
+      updateRichPresence({
+        details: song.title + " - " + song.artist,
+        startTimestamp: Date.now(),
+        endTimestamp: Date.now() + player.duration * 1000 - currentTime * 1000,
+        largeImageKey: albumArtUrl,
+      });
       player.ontimeupdate = () => {
         setCurrentTime(player.currentTime);
       };
     } else {
       player.ontimeupdate = null;
+      setCurrentTime(player.currentTime);
+      updateRichPresence({
+        details: song.title + " - " + song.artist,
+        startTimestamp: 0,
+        endTimestamp: 0,
+        largeImageKey: albumArtUrl,
+      });
     }
   }, [playing]);
 
   useEffect(() => {
     if (!player) return;
     player.currentTime = newTime;
+    updateRichPresence({
+      details: song.title + " - " + song.artist,
+      startTimestamp: Date.now(),
+      endTimestamp: Date.now() + player.duration * 1000 - newTime * 1000,
+      largeImageKey: albumArtUrl,
+    });
   }, [newTime]);
 
   useEffect(() => {
@@ -175,7 +205,7 @@ function Playbar() {
     <div className="w-screen h-20 bg-[#fcfcfc] dark:bg-[#1b1c26] fixed bottom-0 left-0">
       <div className="flex justify-between items-center h-full px-4">
         <div className="flex items-center w-50">
-          {(song.title === undefined || song.title !== "") && (
+          {albumArtUrl !== "" && (
             <img
               src={albumArtUrl}
               className="w-12 h-12 bg-black rounded-full"

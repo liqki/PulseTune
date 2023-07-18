@@ -30,6 +30,14 @@ async function createWindow() {
   browserWindow.on('ready-to-show', () => {
     browserWindow?.show();
 
+    browserWindow?.on('maximize', () => {
+      browserWindow?.webContents.send('window:maximize');
+    });
+
+    browserWindow?.on('unmaximize', () => {
+      browserWindow?.webContents.send('window:unmaximize');
+    });
+
     if (import.meta.env.DEV) {
       browserWindow?.webContents.openDevTools({ mode: 'detach' });
     }

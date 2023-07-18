@@ -1,5 +1,13 @@
 import type { IpcMainEvent } from 'electron';
 import { BrowserWindow, dialog, shell } from 'electron';
+const client = require('discord-rich-presence')(import.meta.env.VITE_DISCORD_CLIENT_ID);
+
+type DiscordRPC = {
+  details: string;
+  startTimestamp: number;
+  endTimestamp: number;
+  largeImageKey: string;
+};
 
 export const handleMenuButtons = (event: IpcMainEvent, button: string) => {
   const webContents = event.sender;
@@ -27,4 +35,14 @@ export const handleFolderDialog = async () => {
 
 export const openExternalLink = (event: IpcMainEvent, link: string) => {
   shell.openExternal(link);
+};
+
+export const updateRichPresence = (event: IpcMainEvent, newRPC: DiscordRPC) => {
+  client.updatePresence(newRPC);
+};
+
+export const isMaximized = (event: IpcMainEvent) => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (!win) return false;
+  event.returnValue = win.isMaximized();
 };
