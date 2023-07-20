@@ -13,6 +13,8 @@ import {
   updateRichPresence,
 } from './ipcHandlers';
 
+let _win;
+
 /**
  * Prevent electron from running multiple instances.
  */
@@ -56,7 +58,7 @@ app
     ipcMain.on('discord-rpc-connected', discordRPCConnected);
     ipcMain.on('is-maximized', isMaximized);
     ipcMain.handle('dialog:addFolder', handleFolderDialog);
-    restoreOrCreateWindow();
+    _win = restoreOrCreateWindow();
   })
   .catch(e => console.error('Failed create window:', e));
 
