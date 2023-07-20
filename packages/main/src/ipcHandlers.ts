@@ -1,6 +1,9 @@
 import type { IpcMainEvent } from 'electron';
 import { BrowserWindow, dialog, shell } from 'electron';
-const client = require('discord-rich-presence')(import.meta.env.VITE_DISCORD_CLIENT_ID);
+const Client = require('discord-rich-presence');
+
+let client: typeof Client | null = null;
+let connected = false;
 
 type DiscordRPC = {
   details: string;
@@ -38,11 +41,55 @@ export const openExternalLink = (event: IpcMainEvent, link: string) => {
 };
 
 export const updateRichPresence = (event: IpcMainEvent, newRPC: DiscordRPC) => {
-  client.updatePresence(newRPC);
+  if (!client) return;
+  try {
+    client.updatePresence(newRPC);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const handleRPCErrors = () => {
+  client.on('connected', () => {
+    connected = true;
+  });
+  client.on('error', (err: Error) => {
+    if (err.message === 'Could not connect' || err.message === 'connection closed') {
+      client = null;
+      connected = false;
+    } else if (err.message === 'RPC_CONNECTION_TIMEOUT') {
+      console.log('restart discord');
+    } else {
+      console.error(err);
+    }
+  });
+  process.on('unhandledRejection', (err: Error) => {
+    if (err.message === 'connection closed') {
+      client = null;
+      connected = false;
+    } else {
+      throw err;
+    }
+  });
+};
+
+export const reconnectDiscordRPC = () => {
+  if (client) return;
+  client = new Client(import.meta.env.VITE_DISCORD_CLIENT_ID);
+  handleRPCErrors();
+};
+
+export const disconnectDiscordRPC = () => {
+  if (!client) return;
+  client.disconnect();
 };
 
 export const isMaximized = (event: IpcMainEvent) => {
   const win = BrowserWindow.getFocusedWindow();
   if (!win) return false;
   event.returnValue = win.isMaximized();
+};
+
+export const discordRPCConnected = (event: IpcMainEvent) => {
+  event.returnValue = connected;
 };

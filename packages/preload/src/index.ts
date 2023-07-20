@@ -63,7 +63,7 @@ export const fileExists = async (path: string): Promise<boolean> => {
 export const getAlbumArt = async (song: { artist: string; title: string }): Promise<string> => {
   let returnURL = '';
   const artist = song.artist.split(',')[0];
-  await albumArt(artist, { album: song.title, size: 'large' }, (err: any, url: string) => {
+  await albumArt(artist, { album: song.title, size: 'large' }, (err: Error, url: string) => {
     if (err) {
       return '';
     }
@@ -80,12 +80,24 @@ export const updateRichPresence = (newRPC: DiscordRPC) => {
   ipcRenderer.send('update-rich-presence', newRPC);
 };
 
+export const reconnectDiscordRPC = () => {
+  ipcRenderer.send('reconnect-discord-rpc');
+};
+
+export const disconnectDiscordRPC = () => {
+  ipcRenderer.send('disconnect-discord-rpc');
+};
+
+export const discordRPCConnected = () => {
+  return ipcRenderer.sendSync('discord-rpc-connected');
+};
+
 export const isMaximized = () => {
   return ipcRenderer.sendSync('is-maximized');
 };
 
 contextBridge.exposeInMainWorld('ipcRenderer', {
-  on: (channel: string, func: any) => {
+  on: (channel: string, func: (...args: unknown[]) => void) => {
     const validChannels = ['window:maximize', 'window:unmaximize'];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (event, ...args) => func(...args));

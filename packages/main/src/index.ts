@@ -3,10 +3,13 @@ import './security-restrictions';
 import { restoreOrCreateWindow } from '/@/mainWindow';
 import { platform } from 'node:process';
 import {
+  disconnectDiscordRPC,
+  discordRPCConnected,
   handleFolderDialog,
   handleMenuButtons,
   isMaximized,
   openExternalLink,
+  reconnectDiscordRPC,
   updateRichPresence,
 } from './ipcHandlers';
 
@@ -48,6 +51,9 @@ app
     ipcMain.on('handle-menu-buttons', handleMenuButtons);
     ipcMain.on('open-external-link', openExternalLink);
     ipcMain.on('update-rich-presence', updateRichPresence);
+    ipcMain.on('reconnect-discord-rpc', reconnectDiscordRPC);
+    ipcMain.on('disconnect-discord-rpc', disconnectDiscordRPC);
+    ipcMain.on('discord-rpc-connected', discordRPCConnected);
     ipcMain.on('is-maximized', isMaximized);
     ipcMain.handle('dialog:addFolder', handleFolderDialog);
     restoreOrCreateWindow();

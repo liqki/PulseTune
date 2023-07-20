@@ -2,18 +2,34 @@ import "virtual:windi.css";
 import React, { useEffect, useState } from "react";
 import Titlebar from "./components/Titlebar";
 import Page from "./components/Page";
-import { FavoritesContext, Folder, FoldersContext, NowPlayingContext } from "./util/context";
-import { fileExists, readFiles, readFolders } from "#preload";
+import {
+  DarkModeContext,
+  DiscordRPCContext,
+  FavoritesContext,
+  Folder,
+  FoldersContext,
+  NowPlayingContext,
+} from "./util/context";
+import {
+  disconnectDiscordRPC,
+  fileExists,
+  readFiles,
+  readFolders,
+  reconnectDiscordRPC,
+} from "#preload";
 
 function App() {
   const WebkitAppRegion = {
     WebkitAppRegion: "drag",
   } as React.CSSProperties;
 
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(localStorage.getItem("darkMode") === "true");
   const [path, setPath] = useState<string>("");
   const [folders, setFolders] = useState<Folder[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [discordRPC, setDiscordRPC] = useState<boolean>(
+    localStorage.getItem("discordRPC") === "true",
+  );
 
   const updateFolders = async (folders: Folder[]) => {
     let newFolders: Folder[] = [];
@@ -39,8 +55,6 @@ function App() {
   };
 
   useEffect(() => {
-    const darkMode = localStorage.getItem("darkMode") || "true";
-    setDarkMode(darkMode === "true");
     const folders = localStorage.getItem("folders");
     if (folders) updateFolders(JSON.parse(folders));
     const lastPlayed = localStorage.getItem("lastPlayed");
@@ -54,6 +68,12 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem("darkMode", darkMode.toString());
+    localStorage.setItem("discordRPC", discordRPC.toString());
+    if (discordRPC) {
+      reconnectDiscordRPC();
+    } else {
+      disconnectDiscordRPC();
+    }
     if (folders.length !== 0) {
       localStorage.setItem("folders", JSON.stringify(folders));
     } else {
@@ -65,18 +85,22 @@ function App() {
     } else {
       localStorage.removeItem("favorites");
     }
-  }, [darkMode, folders, path, favorites]);
+  }, [darkMode, folders, path, favorites, discordRPC]);
 
   return (
     <FoldersContext.Provider value={{ folders, setFolders }}>
       <FavoritesContext.Provider value={{ favorites, setFavorites }}>
         <NowPlayingContext.Provider value={{ path, setPath }}>
-          <div className={`${darkMode && "dark"}`}>
-            <div style={WebkitAppRegion}>
-              <Titlebar />
-            </div>
-            <Page />
-          </div>
+          <DarkModeContext.Provider value={{ darkMode, setDarkMode }}>
+            <DiscordRPCContext.Provider value={{ discordRPC, setDiscordRPC }}>
+              <div className={`${darkMode && "dark"}`}>
+                <div style={WebkitAppRegion}>
+                  <Titlebar />
+                </div>
+                <Page />
+              </div>
+            </DiscordRPCContext.Provider>
+          </DarkModeContext.Provider>
         </NowPlayingContext.Provider>
       </FavoritesContext.Provider>
     </FoldersContext.Provider>

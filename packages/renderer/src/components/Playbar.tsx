@@ -9,7 +9,7 @@ import {
 } from "react-icons/bs";
 import { MdVolumeOff, MdVolumeUp } from "react-icons/md";
 import { shortenString } from "../util/helpers";
-import { useFavorites, useFolders, useNowPlaying } from "../util/context";
+import { useDiscordRPC, useFavorites, useFolders, useNowPlaying } from "../util/context";
 import Timeline from "./Timeline";
 import VolumeSlider from "./VolumeSlider";
 import { getAlbumArt, updateRichPresence } from "#preload";
@@ -23,6 +23,8 @@ function Playbar() {
   const { path, setPath } = useNowPlaying();
   const { folders } = useFolders();
   const { favorites, setFavorites } = useFavorites();
+  const { discordRPC } = useDiscordRPC();
+
   const [song, setSong] = useState<Song>({
     artist: "",
     title: "",
@@ -87,10 +89,11 @@ function Playbar() {
         rpcLoad.current = false;
         return;
       }
+      if (!discordRPC) return;
       updateRichPresence({
         details: song.title + " - " + song.artist,
         startTimestamp: Date.now(),
-        endTimestamp: Date.now() + player.duration * 1000,
+        endTimestamp: Date.now() + player.duration * 1000 - currentTime * 1000,
         largeImageKey: url,
       });
     });
@@ -111,18 +114,21 @@ function Playbar() {
     if (!player) return;
     playing ? player.play() : player.pause();
     if (playing) {
-      updateRichPresence({
-        details: song.title + " - " + song.artist,
-        startTimestamp: Date.now(),
-        endTimestamp: Date.now() + player.duration * 1000 - currentTime * 1000,
-        largeImageKey: albumArtUrl,
-      });
+      if (discordRPC) {
+        updateRichPresence({
+          details: song.title + " - " + song.artist,
+          startTimestamp: Date.now(),
+          endTimestamp: Date.now() + player.duration * 1000 - currentTime * 1000,
+          largeImageKey: albumArtUrl,
+        });
+      }
       player.ontimeupdate = () => {
         setCurrentTime(player.currentTime);
       };
     } else {
       player.ontimeupdate = null;
       setCurrentTime(player.currentTime);
+      if (!discordRPC) return;
       updateRichPresence({
         details: song.title + " - " + song.artist,
         startTimestamp: 0,
@@ -135,6 +141,7 @@ function Playbar() {
   useEffect(() => {
     if (!player) return;
     player.currentTime = newTime;
+    if (!discordRPC) return;
     updateRichPresence({
       details: song.title + " - " + song.artist,
       startTimestamp: Date.now(),

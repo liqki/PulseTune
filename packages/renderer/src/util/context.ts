@@ -1,10 +1,5 @@
 import { createContext, useContext } from 'react';
 
-export type NowPlaying = {
-  path: string;
-  setPath: (path: string) => void;
-};
-
 export type Folder = {
   path: string;
   name: string;
@@ -12,14 +7,29 @@ export type Folder = {
   subfolders?: Array<Folder>;
 };
 
-export type Folders = {
+type NowPlaying = {
+  path: string;
+  setPath: (path: string) => void;
+};
+
+type Folders = {
   folders: Array<Folder>;
   setFolders: (folders: Array<Folder>) => void;
 };
 
-export type Favorites = {
+type Favorites = {
   favorites: Array<string>;
   setFavorites: (favorites: Array<string>) => void;
+};
+
+type DarkMode = {
+  darkMode: boolean;
+  setDarkMode: (darkMode: boolean) => void;
+};
+
+type DiscordRPC = {
+  discordRPC: boolean;
+  setDiscordRPC: (discordRPC: boolean) => void;
 };
 
 export const NowPlayingContext = createContext<NowPlaying>({
@@ -42,3 +52,17 @@ export const FavoritesContext = createContext<Favorites>({
 });
 
 export const useFavorites = () => useContext(FavoritesContext);
+
+export const DarkModeContext = createContext<DarkMode>({
+  darkMode: false,
+  setDarkMode: () => {},
+});
+
+export const useDarkMode = () => useContext(DarkModeContext);
+
+export const DiscordRPCContext = createContext<DiscordRPC>({
+  discordRPC: false,
+  setDiscordRPC: () => {},
+});
+
+export const useDiscordRPC = () => useContext(DiscordRPCContext);
