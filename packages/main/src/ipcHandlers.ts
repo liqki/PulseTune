@@ -60,7 +60,7 @@ const handleRPCErrors = () => {
     } else if (err.message === 'RPC_CONNECTION_TIMEOUT') {
       console.log('restart discord');
     } else {
-      console.error(err);
+      console.error(err.message);
     }
   });
   process.on('unhandledRejection', (err: Error) => {

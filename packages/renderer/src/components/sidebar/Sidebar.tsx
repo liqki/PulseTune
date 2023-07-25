@@ -1,7 +1,7 @@
 import { handleFolderDialog, readFiles, readFolders } from "#preload";
 import { useState } from "react";
 import { AiFillFolderAdd } from "react-icons/ai";
-import { Folder, useFavorites, useFolders, useNowPlaying } from "../../util/context";
+import { Folder, useFavorites, useFolders } from "../../util/context";
 import SidebarEntry from "./SidebarEntry";
 
 function Sidebar() {
@@ -25,7 +25,20 @@ function Sidebar() {
   };
 
   const removeFolder = (path: string) => {
-    setFolders(folders.filter(folder => folder.path !== path));
+    if (path === "favorites") return;
+    if (openFolders.includes(path)) {
+      setOpenFolders(openFolders.filter(folder => folder !== path));
+    }
+    if (folders.find(folder => folder.path === path)) {
+      setFolders(folders.filter(folder => folder.path !== path));
+    } else {
+      const folder = folders.find(folder =>
+        folder.subfolders?.find(subfolder => subfolder.path === path),
+      );
+      if (!folder) return;
+      folder.subfolders = folder.subfolders?.filter(subfolder => subfolder.path !== path);
+      setFolders([...folders]);
+    }
   };
 
   return (
@@ -41,6 +54,7 @@ function Sidebar() {
           folder={{ path: "favorites", name: "Favorites", files: favorites }}
           openFolders={openFolders}
           setOpenFolders={setOpenFolders}
+          removeFolder={removeFolder}
         />
         {folders.map((folder, i) => (
           <SidebarEntry
@@ -48,6 +62,7 @@ function Sidebar() {
             folder={folder}
             openFolders={openFolders}
             setOpenFolders={setOpenFolders}
+            removeFolder={removeFolder}
           />
         ))}
       </ul>
