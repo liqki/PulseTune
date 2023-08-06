@@ -88,12 +88,12 @@ export const disconnectDiscordRPC = () => {
   ipcRenderer.send('disconnect-discord-rpc');
 };
 
-export const discordRPCConnected = () => {
-  return ipcRenderer.sendSync('discord-rpc-connected');
+export const discordRPCConnected = async () => {
+  return await ipcRenderer.invoke('discord-rpc-connected');
 };
 
-export const isMaximized = () => {
-  return ipcRenderer.sendSync('is-maximized');
+export const isMaximized = async () => {
+  return await ipcRenderer.invoke('is-maximized');
 };
 
 contextBridge.exposeInMainWorld('ipcRenderer', {

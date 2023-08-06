@@ -16,12 +16,14 @@ function Titlebar() {
   } as React.CSSProperties;
 
   const { path } = useContext(NowPlayingContext);
-  const [maximized, setMaximized] = useState<boolean>(isMaximized());
+  const [maximized, setMaximized] = useState<boolean>(false);
 
   const button = "w-11 h-7 flex justify-center items-center";
   const icon = "w-7 h-5";
 
   useEffect(() => {
+    const initialMaximized = async () => setMaximized(await isMaximized());
+    initialMaximized();
     window.ipcRenderer.on("window:maximize", () => {
       setMaximized(true);
     });

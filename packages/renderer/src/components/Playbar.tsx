@@ -9,7 +9,7 @@ import {
 } from "react-icons/bs";
 import { MdVolumeOff, MdVolumeUp } from "react-icons/md";
 import { shortenString } from "../util/helpers";
-import { useDiscordRPC, useFavorites, useFolders, useNowPlaying } from "../util/context";
+import { Folder, useDiscordRPC, useFavorites, useFolders, useNowPlaying } from "../util/context";
 import Timeline from "./Timeline";
 import VolumeSlider from "./VolumeSlider";
 import { getAlbumArt, updateRichPresence } from "#preload";
@@ -166,7 +166,14 @@ function Playbar() {
     if (!player || path === "") return;
     // is favorite
     if (path.startsWith("File:///")) {
-      if (favorites.length === 1) return;
+      if (favorites.length === 1) {
+        setPlaying(false);
+        setCurrentTime(0);
+        setTimeout(() => {
+          setPlaying(true);
+        }, 10);
+        return;
+      }
       const currentIndex = favorites.findIndex(favorite => favorite === path);
       let nextIndex = currentIndex + direction;
       if (nextIndex < 0) nextIndex = favorites.length - 1;
@@ -174,13 +181,30 @@ function Playbar() {
       setPlaying(false);
       setPath(favorites[nextIndex]);
     } else {
-      const folder =
+      let folder: Folder | undefined =
         folders[
           folders.findIndex(folder => folder.path === path.substring(0, path.lastIndexOf("\\")))
         ];
+      if (!folder) {
+        const subfolders = folders.map(folder => folder.subfolders);
+        for (let i = 0; i < subfolders.length; i++) {
+          if (!subfolders[i]) continue;
+          folder = subfolders[i]?.find(
+            folder => folder.path === path.substring(0, path.lastIndexOf("\\")),
+          );
+          if (folder) break;
+        }
+      }
       if (!folder) return;
       if (!("files" in folder) || folder.files === undefined) return;
-      if (folder.files.length === 1) return;
+      if (folder.files.length === 1) {
+        setPlaying(false);
+        setCurrentTime(0);
+        setTimeout(() => {
+          setPlaying(true);
+        }, 10);
+        return;
+      }
       const currentIndex = folder.files.findIndex(
         file => file === path.substring(path.lastIndexOf("\\") + 1),
       );

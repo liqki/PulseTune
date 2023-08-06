@@ -55,6 +55,7 @@ const handleRPCErrors = () => {
   });
   client.on('error', (err: Error) => {
     if (err.message === 'Could not connect' || err.message === 'connection closed') {
+      console.log('disconnected');
       client = null;
       connected = false;
     } else if (err.message === 'RPC_CONNECTION_TIMEOUT') {
@@ -74,7 +75,7 @@ const handleRPCErrors = () => {
 };
 
 export const reconnectDiscordRPC = () => {
-  if (client) return;
+  if (connected) return;
   client = new Client(import.meta.env.VITE_DISCORD_CLIENT_ID);
   handleRPCErrors();
 };
@@ -82,14 +83,15 @@ export const reconnectDiscordRPC = () => {
 export const disconnectDiscordRPC = () => {
   if (!client) return;
   client.disconnect();
+  connected = false;
 };
 
-export const isMaximized = (event: IpcMainEvent) => {
+export const isMaximized = () => {
   const win = BrowserWindow.getFocusedWindow();
   if (!win) return false;
-  event.returnValue = win.isMaximized();
+  return win.isMaximized();
 };
 
-export const discordRPCConnected = (event: IpcMainEvent) => {
-  event.returnValue = connected;
+export const discordRPCConnected = () => {
+  return connected;
 };
