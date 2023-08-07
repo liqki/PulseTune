@@ -21,6 +21,10 @@ function Settings() {
     setTimeout(() => {
       syncRPC();
     }, 1000);
+    window.ipcRenderer.on("discord-rpc-disconnected", () => {
+      console.log("Discord RPC disconnected");
+      setRpcConnected(false);
+    });
   }, []);
 
   return (

@@ -19,6 +19,7 @@ module.exports = async function () {
     files: ["packages/**/dist/**"],
     extraMetadata: {
       version: getVersion(),
+      name: "PulseTune",
     },
 
     // Specify linux target just for disabling snap compilation

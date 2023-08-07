@@ -98,7 +98,7 @@ export const isMaximized = async () => {
 
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on: (channel: string, func: (...args: unknown[]) => void) => {
-    const validChannels = ['window:maximize', 'window:unmaximize'];
+    const validChannels = ['window:maximize', 'window:unmaximize', 'discord-rpc-disconnected'];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (event, ...args) => func(...args));
     }

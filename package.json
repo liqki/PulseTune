@@ -1,7 +1,7 @@
 {
-  "name": "music-player",
+  "name": "pulsetune",
   "description": "A music player based on electron and react",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "author": {
     "name": "liqki",

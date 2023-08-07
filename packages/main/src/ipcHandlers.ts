@@ -1,5 +1,5 @@
 import type { IpcMainEvent } from 'electron';
-import { BrowserWindow, dialog, shell } from 'electron';
+import { BrowserWindow, dialog, shell, webContents } from 'electron';
 const Client = require('discord-rich-presence');
 
 let client: typeof Client | null = null;
@@ -53,19 +53,20 @@ const handleRPCErrors = () => {
   client.on('connected', () => {
     connected = true;
   });
+  client.on('disconnected', () => client.destroy());
   client.on('error', (err: Error) => {
     if (err.message === 'Could not connect' || err.message === 'connection closed') {
-      console.log('disconnected');
       client = null;
       connected = false;
-    } else if (err.message === 'RPC_CONNECTION_TIMEOUT') {
-      console.log('restart discord');
-    } else {
+    } else if (err.message.startsWith('child "activity" fails because')) console.error();
+    else {
       console.error(err.message);
     }
   });
   process.on('unhandledRejection', (err: Error) => {
     if (err.message === 'connection closed') {
+      if (!client) return;
+      webContents.getFocusedWebContents()?.send('discord-rpc-disconnected');
       client = null;
       connected = false;
     } else {
@@ -75,7 +76,7 @@ const handleRPCErrors = () => {
 };
 
 export const reconnectDiscordRPC = () => {
-  if (connected) return;
+  if (connected || client) return;
   client = new Client(import.meta.env.VITE_DISCORD_CLIENT_ID);
   handleRPCErrors();
 };
