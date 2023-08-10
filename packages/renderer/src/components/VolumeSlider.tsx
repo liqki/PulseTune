@@ -1,3 +1,5 @@
+import { useDarkMode } from "../util/context";
+
 function VolumeSlider({
   volume,
   setVolume,
@@ -5,6 +7,8 @@ function VolumeSlider({
   volume: number;
   setVolume: (volume: number) => void;
 }) {
+  const { darkMode } = useDarkMode();
+
   return (
     <div>
       <style>
@@ -17,9 +21,11 @@ function VolumeSlider({
               border-radius: 1rem;
               transform: rotate(-90deg);
               overflow: hidden;     
-              background: linear-gradient(to right, #e5e7eb 0%, #e5e7eb ${volume * 100}%, #374151 ${
-          volume * 100
-        }%, #374151 100%);         
+              background: linear-gradient(to right, ${darkMode ? "#e5e7eb" : "#484b6a"} 0%, ${
+          darkMode ? "#e5e7eb" : "#484b6a"
+        } ${volume * 100}%, ${darkMode ? "#374151" : "#d1d5db"} ${volume * 100}%, ${
+          darkMode ? "#374151" : "#d1d5db"
+        } 100%);         
             }
 
             .volume::-webkit-slider-runnable-track {

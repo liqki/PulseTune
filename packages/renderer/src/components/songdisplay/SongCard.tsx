@@ -30,7 +30,7 @@ function SongCard({ file }: { file: string }) {
 
   return (
     <div
-      className="h-45 w-40 relative cursor-pointer"
+      className="h-45 w-40 relative cursor-pointer text-white"
       onClick={() => {
         if (file === path) return;
         setPath(file);

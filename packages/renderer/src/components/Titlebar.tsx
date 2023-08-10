@@ -37,7 +37,7 @@ function Titlebar() {
   };
 
   return (
-    <div className="w-screen h-7 bg-[#fcfcfc] dark:bg-[#1b1c26] flex justify-between items-center text-gray-200">
+    <div className="w-screen h-7 bg-[#fafafa] dark:bg-[#1b1c26] flex justify-between items-center text-[#484b6a] dark:text-gray-200">
       <div className="w-33 h-full flex justify-start items-center">
         <img
           src={logo}

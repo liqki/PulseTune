@@ -35,7 +35,7 @@ function Sidebar() {
   };
 
   return (
-    <div className="h-[calc(100%-120px)] w-48 fixed left-0 bg-[#fcfcfc] dark:bg-[#1b1c26] flex flex-col justify-start items-start">
+    <div className="h-[calc(100%-120px)] w-48 fixed left-0 bg-[#fafafa] dark:bg-[#1b1c26] flex flex-col justify-start items-start">
       <div className="w-full flex justify-center items-center">
         <AiFillFolderAdd
           className="h-10 w-10 dark:text-gray-200 dark:hover:text-white transform transition-transform hover:scale-105 hover:cursor-pointer"

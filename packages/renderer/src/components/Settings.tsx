@@ -45,7 +45,7 @@ function Settings() {
       <ul
         className={`${
           showSettings ? "block" : "hidden"
-        } dark:bg-gray-700 rounded-md w-48 flex flex-col gap-1 items-start z-50`}
+        } bg-gray-100 dark:bg-gray-700 rounded-md w-48 flex flex-col gap-1 items-start z-50`}
         onMouseLeave={() => setShowSettings(false)}
       >
         <li className="px-2 flex justify-between items-center w-full">

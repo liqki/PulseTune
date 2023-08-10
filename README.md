@@ -9,8 +9,10 @@ PulseTune is a simple and easy to use music player built with Electron and React
 - [x] Play music from your local library
 - [x] Folder structure
 - [x] Search for songs in your library
-- [x] Dark mode
 - [x] Mark songs as favorites
+- [x] Display cover art
+- [x] DiscordRPC
+- [x] Dark mode
 - [x] Cross platform (not tested on MacOS and Linux)
 
 ## Usage

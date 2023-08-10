@@ -233,7 +233,7 @@ function Playbar() {
   };
 
   return (
-    <div className="w-screen h-20 bg-[#fcfcfc] dark:bg-[#1b1c26] fixed bottom-0 left-0">
+    <div className="w-screen h-20 bg-[#fafafa] dark:bg-[#1b1c26] fixed bottom-0 left-0">
       <div className="flex justify-between items-center h-full px-4">
         <div className="flex items-center w-50">
           {albumArtUrl !== "" && (

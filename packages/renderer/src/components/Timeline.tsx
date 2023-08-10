@@ -1,3 +1,4 @@
+import { useDarkMode } from "../util/context";
 import { formatTime } from "../util/helpers";
 
 function Timeline({
@@ -9,6 +10,8 @@ function Timeline({
   currentTime: number;
   setNewTime: (time: number) => void;
 }) {
+  const { darkMode } = useDarkMode();
+
   return (
     <div className="flex items-center justify-center gap-2">
       <style>
@@ -29,7 +32,7 @@ function Timeline({
               width: 1px;
               -webkit-appearance: none;
               height: 1px;
-              box-shadow: -240px 0 0 240px #e5e7eb;
+              box-shadow: -240px 0 0 240px ${darkMode ? "#e5e7eb" : "#484b6a"};
             }
           }
         `}
@@ -44,7 +47,7 @@ function Timeline({
           if (!player) return;
           setNewTime(Number(e.target.value));
         }}
-        className="w-60 h-1 bg-gray-200 dark:bg-gray-700 rounded-full outline-none timeline"
+        className="w-60 h-1 bg-gray-300 dark:bg-gray-700 rounded-full outline-none timeline"
       />
       <p>{player && !Number.isNaN(player.duration) ? formatTime(player.duration) : "0:00"}</p>
     </div>

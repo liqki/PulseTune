@@ -61,7 +61,7 @@ function SongDisplay() {
       {sortedSongs.length > 0 && (
         <input
           type="text"
-          className="w-full h-10 p-2 bg-[#fcfcfc] dark:bg-[#1b1c26] dark:text-white dark:placeholder-gray-400 dark:border-gray-600 dark:focus:border-gray-500 rounded-full border-2 focus:outline-none focus:border-gray-400 transition-colors mb-2"
+          className="w-full h-10 p-2 bg-[#fafafa] placeholder-gray-400 border-gray-300 dark:bg-[#1b1c26] dark:text-white dark:border-gray-600 dark:focus:border-gray-500 rounded-full border-2 focus:outline-none focus:border-gray-400 transition-colors mb-2"
           placeholder="Search..."
           value={searchInput}
           onChange={e => setSearchInput(e.target.value.toLowerCase())}
