@@ -2,7 +2,7 @@ import { handleMenuButtons, isMaximized, openExternalLink } from "#preload";
 import { useContext, useEffect, useState } from "react";
 import { VscChromeRestore, VscChromeMaximize, VscChromeMinimize, VscClose } from "react-icons/vsc";
 import { NowPlayingContext } from "../util/context";
-import logo from "../assets/icon.png";
+import logo from "../assets/icon.svg";
 
 declare global {
   interface Window {
@@ -41,7 +41,7 @@ function Titlebar() {
       <div className="w-33 h-full flex justify-start items-center">
         <img
           src={logo}
-          className="w-5 h-5 rounded-full ml-1 cursor-pointer"
+          className="w-6 h-6 rounded-full ml-1 cursor-pointer"
           onClick={() => openExternalLink("https://github.com/liqki/music-player")}
           style={WebkitAppRegion}
         />
